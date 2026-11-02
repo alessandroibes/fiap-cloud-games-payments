@@ -1,0 +1,20 @@
+name: fcg-payments-local
+services:
+  payments:
+    image: fiap-cloud-games-payments:local
+    build: .
+    environment:
+      ConnectionStrings__Payments: ${PAYMENTS_DOCKER_CONNECTION:?Configure .env}
+      PaymentSimulation__Outcome: ${PaymentSimulation__Outcome:-Approved}
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__VirtualHost: fcg
+      RabbitMq__Username: ${RabbitMq__Username:?Configure .env}
+      RabbitMq__Password: ${RabbitMq__Password:?Configure .env}
+    ports: ["127.0.0.1:5083:8080"]
+    networks: [fcg]
+    restart: unless-stopped
+networks:
+  fcg:
+    external: true
+    name: fiap-cloud-games_default

@@ -1,6 +1,6 @@
 # SPEC-P2-PAYMENTS — PaymentsAPI
 
-**Estado:** Especificação de planejamento, alinhada aos ADRs aceitos; implementação ainda não iniciada.
+**Estado:** G4 implementado; 45 testes locais aprovados. [Evidências](quality/g4-validation.md). Notifications real no G5, Compose completo no G6 e Kubernetes no G7.
 
 ## Responsabilidade
 Consumir pedidos e simular processamento de pagamento; não conceder jogos nem acessar dados de catálogo diretamente.
@@ -14,11 +14,11 @@ Consumir pedidos e simular processamento de pagamento; não conceder jogos nem a
 6. Testes unitários cobrem ambos os resultados; integração verifica publicação e duplicatas.
 
 ## Integrações
-Consome `order-placed-v1.md`; publica `payment-processed-v1.md`.
+Consome [OrderPlacedEvent](contracts/v1/order-placed-v1.md); publica [PaymentProcessedEvent](contracts/v1/payment-processed-v1.md) via Consumer Outbox EF/MassTransit, com filas independentes de Catalog e Notifications. Nenhum acesso aos bancos irmãos.
 
 ## Decisões confirmadas e detalhamento técnico
-Migrations explícitas antes das APIs confirmadas em 30/10/2026. Detalhar configuração técnica do transporte e mensagens inválidas. PostgreSQL, resultado único por OrderId, Outbox/Inbox e simulação determinística já aprovados.
+Migrations explícitas antes das APIs confirmadas em 30/10/2026. Configuração PaymentSimulation:Outcome é Approved por padrão ou Rejected; valores inválidos impedem startup. Unicidade por OrderId, receipts duráveis por EventId e locks transacionais protegem duplicatas; resultados persistidos não são recalculados após mudança de modo. Erros permanentes não são retentados; falhas transitórias têm três retentativas em 1, 5 e 15 segundos. [Detalhes operacionais e recuperação](operations.md).
 
 ## Baseline obrigatória para implementação
 
-As decisões dos ADR-P2-001 a ADR-P2-007 estão **Aceitas**. Implementar com PostgreSQL e Docker Desktop Kubernetes; contratos V1 conforme `docs/contracts/`.
+As decisões dos ADR-P2-001 a ADR-P2-007 estão **Aceitas**. PostgreSQL implementado; Docker Desktop Kubernetes previsto no G7. Contratos V1 em `docs/contracts/v1/`.
